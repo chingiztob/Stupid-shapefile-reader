@@ -1,9 +1,8 @@
 use byteorder::{BigEndian, LittleEndian, ReadBytesExt};
+use geo::{Geometry, Point};
 use std::fs::File;
-use std::io::{BufReader, Read};
+use std::io::BufReader;
 use std::path::PathBuf;
-
-const SKIP: usize = std::mem::size_of::<i32>() * 5;
 
 #[derive(Debug)]
 pub struct Header {
@@ -22,6 +21,7 @@ pub struct Header {
 }
 
 impl Header {
+    /// Returns the geometry type of the header.
     pub fn geom_type(&self) -> &str {
         match self.shape_type {
             0 => "Null",
@@ -43,44 +43,112 @@ impl Header {
     }
 }
 
-pub fn read_shape(path: &str) -> Result<Header, std::io::Error> {
-    let pathbuf = PathBuf::from(path);
-    let raw_file = File::open(pathbuf)?;
-    // Step 2: Wrap the file in a BufReader
-    let mut reader = BufReader::new(raw_file);
+impl Default for Header {
+    fn default() -> Self {
+        Header {
+            file_code: 9994,
+            file_length: 0,
+            version: 1000,
+            shape_type: 0,
+            min_x: 0.0,
+            min_y: 0.0,
+            max_x: 0.0,
+            max_y: 0.0,
+            min_z: 0.0,
+            max_z: 0.0,
+            min_m: 0.0,
+            max_m: 0.0,
+        }
+    }
+}
 
-    // Read the Meta
-    let file_code = reader.read_i32::<BigEndian>()?;
+pub struct MainFile {
+    // Buffer used for reading the .shp file
+    buffer: BufReader<File>,
+    pub header: Header,
+    pub records: Vec<Geometry>,
+}
 
-    let mut skip = [0; SKIP];
-    reader.read_exact(&mut skip)?;
+impl MainFile {
+    pub fn from(path: &str) -> Result<MainFile, std::io::Error> {
+        // Init file buffer
+        let mut mainfile = MainFile {
+            buffer: BufReader::new(File::open(PathBuf::from(path))?),
+            header: Default::default(),
+            records: Vec::new(),
+        };
 
-    let file_length = reader.read_i32::<BigEndian>()?;
-    let version = reader.read_i32::<LittleEndian>()?;
-    let shape_type = reader.read_i32::<LittleEndian>()?;
+        mainfile.read_header()?;
+        mainfile.read_records();
 
-    // Read BBOX
-    let min_x = reader.read_f64::<LittleEndian>()?;
-    let min_y = reader.read_f64::<LittleEndian>()?;
-    let max_x = reader.read_f64::<LittleEndian>()?;
-    let max_y = reader.read_f64::<LittleEndian>()?;
-    let min_z = reader.read_f64::<LittleEndian>()?;
-    let max_z = reader.read_f64::<LittleEndian>()?;
-    let min_m = reader.read_f64::<LittleEndian>()?;
-    let max_m = reader.read_f64::<LittleEndian>()?;
+        Ok(mainfile)
+    }
 
-    Ok(Header {
-        file_code,
-        file_length,
-        version,
-        shape_type,
-        min_x,
-        min_y,
-        max_x,
-        max_y,
-        min_z,
-        max_z,
-        min_m,
-        max_m,
+    fn read_header(&mut self) -> Result<(), std::io::Error> {
+        let reader = self.buffer.get_mut();
+
+        // Read the file code
+        self.header.file_code = reader.read_i32::<BigEndian>()?;
+        // Read the file length
+        self.header.file_length = reader.read_i32::<BigEndian>()?;
+        // Read the version
+        self.header.version = reader.read_i32::<LittleEndian>()?;
+        // Read the shape type
+        self.header.shape_type = reader.read_i32::<LittleEndian>()?;
+        // Read the bounding box
+        self.header.min_x = reader.read_f64::<LittleEndian>()?;
+        self.header.min_y = reader.read_f64::<LittleEndian>()?;
+        self.header.max_x = reader.read_f64::<LittleEndian>()?;
+        self.header.max_y = reader.read_f64::<LittleEndian>()?;
+        self.header.min_z = reader.read_f64::<LittleEndian>()?;
+        self.header.max_z = reader.read_f64::<LittleEndian>()?;
+        self.header.min_m = reader.read_f64::<LittleEndian>()?;
+        self.header.max_m = reader.read_f64::<LittleEndian>()?;
+
+        Ok(())
+    }
+
+    fn read_records(&mut self) {
+        while let Ok(record) = read_record(self) {
+            if let Some(geometry) = record.geometry {
+                self.records.push(geometry);
+            }
+        }
+    }
+}
+
+#[derive(Debug, Default)]
+struct Record {
+    number: i32,
+    content_length: i32,
+    geometry: Option<Geometry>,
+}
+
+fn read_record(shp: &mut MainFile) -> Result<Record, std::io::Error> {
+    let reader = shp.buffer.get_mut();
+
+    let number = reader.read_i32::<BigEndian>()?;
+    let content_length = reader.read_i32::<BigEndian>()?;
+    let geometry = read_shape(shp)?;
+
+    Ok(Record {
+        number,
+        content_length,
+        geometry,
     })
+}
+
+fn read_shape(shp: &mut MainFile) -> Result<Option<Geometry>, std::io::Error> {
+    let reader = shp.buffer.get_mut();
+
+    let shape = reader.read_i32::<LittleEndian>()?;
+    // Null geometry detected
+    if shape == 0 {
+        return Ok(None);
+    }
+
+    let x = reader.read_f64::<LittleEndian>()?;
+    let y = reader.read_f64::<LittleEndian>()?;
+
+    Ok(Some(Geometry::Point(Point::new(x, y))))
 }

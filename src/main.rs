@@ -1,9 +1,10 @@
-use shape::read_shape;
+use shape::*;
 
 fn main() {
-    println!("Hello, world!");
-    let bytes = read_shape(r"D:\GIS\DIPLOM\Outputs\Chelyabinsk\Shapes\chel_H3_TT.shp").unwrap();
+    // r"D:\GIS\DIPLOM\Outputs\Chelyabinsk\Shapes\chel_H3_TT.shp"
 
-    println!("file contents {:#?}", bytes);
-    println!("file geom type {:#?}", bytes.geom_type());
+    let mainfile = MainFile::from(r"D:\Rust\shape\files\demo_1.shp").unwrap();
+    let mainfile = MainFile::from(r"D:\GIS\DIPLOM\Outputs\Chelyabinsk\Shapes\chel_H3_TT.shp").unwrap();
+
+    println!("file records {:#?}", mainfile.records);
 }
