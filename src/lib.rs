@@ -1,7 +1,7 @@
 use byteorder::{BigEndian, LittleEndian, ReadBytesExt};
 use geo::{Geometry, Point};
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, Seek};
 use std::path::PathBuf;
 
 #[derive(Debug)]
@@ -73,7 +73,9 @@ impl MainFile {
     pub fn from(path: &str) -> Result<MainFile, std::io::Error> {
         // Init file buffer
         let mut mainfile = MainFile {
-            buffer: BufReader::new(File::open(PathBuf::from(path))?),
+            buffer: BufReader::new(
+                File::open(PathBuf::from(path)).expect("Provide a valid path for the .shp file"),
+            ),
             header: Default::default(),
             records: Vec::new(),
         };
@@ -89,6 +91,8 @@ impl MainFile {
 
         // Read the file code
         self.header.file_code = reader.read_i32::<BigEndian>()?;
+        // Skip 5 unused bytes
+        reader.seek(std::io::SeekFrom::Current(20))?;
         // Read the file length
         self.header.file_length = reader.read_i32::<BigEndian>()?;
         // Read the version
@@ -114,6 +118,28 @@ impl MainFile {
                 self.records.push(geometry);
             }
         }
+    }
+
+    pub fn to_csv(&self) -> String {
+        let mut csv = String::new();
+
+        for geometry in &self.records {
+            match geometry {
+                Geometry::Point(point) => {
+                    csv.push_str(&format!("{},{}\n", point.x(), point.y()));
+                }
+                Geometry::Line(_) => todo!(),
+                Geometry::LineString(_) => todo!(),
+                Geometry::Polygon(_) => todo!(),
+                Geometry::MultiPoint(_) => todo!(),
+                Geometry::MultiLineString(_) => todo!(),
+                Geometry::MultiPolygon(_) => todo!(),
+                Geometry::GeometryCollection(_) => todo!(),
+                Geometry::Rect(_) => todo!(),
+                Geometry::Triangle(_) => todo!(),
+            }
+        }
+        csv
     }
 }
 
