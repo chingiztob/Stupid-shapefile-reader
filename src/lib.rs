@@ -20,29 +20,6 @@ pub struct Header {
     pub max_m: f64,
 }
 
-impl Header {
-    /// Returns the geometry type of the header.
-    pub fn geom_type(&self) -> &str {
-        match self.shape_type {
-            0 => "Null",
-            1 => "Point",
-            3 => "Polyline",
-            5 => "Polygon",
-            8 => "Polygon",
-            11 => "PointZ",
-            13 => "PolyLineZ",
-            15 => "PolygonZ",
-            18 => "MultiPointZ",
-            21 => "PointM",
-            23 => "PolyLineM",
-            25 => "PolygonM",
-            28 => "MultiPointM",
-            31 => "MultiPatch",
-            _ => "INVALID GEOMETRY",
-        }
-    }
-}
-
 impl Default for Header {
     fn default() -> Self {
         Header {
@@ -84,6 +61,26 @@ impl MainFile {
         mainfile.read_records();
 
         Ok(mainfile)
+    }
+
+    pub fn geom_type(&self) -> &str {
+        match self.header.shape_type {
+            0 => "Null",
+            1 => "Point",
+            3 => "Polyline",
+            5 => "Polygon",
+            8 => "Polygon",
+            11 => "PointZ",
+            13 => "PolyLineZ",
+            15 => "PolygonZ",
+            18 => "MultiPointZ",
+            21 => "PointM",
+            23 => "PolyLineM",
+            25 => "PolygonM",
+            28 => "MultiPointM",
+            31 => "MultiPatch",
+            _ => "INVALID GEOMETRY",
+        }
     }
 
     fn read_header(&mut self) -> Result<(), std::io::Error> {
@@ -134,9 +131,7 @@ impl MainFile {
                 Geometry::MultiPoint(_) => todo!(),
                 Geometry::MultiLineString(_) => todo!(),
                 Geometry::MultiPolygon(_) => todo!(),
-                Geometry::GeometryCollection(_) => todo!(),
-                Geometry::Rect(_) => todo!(),
-                Geometry::Triangle(_) => todo!(),
+                _ => todo!(),
             }
         }
         csv
