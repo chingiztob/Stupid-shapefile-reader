@@ -4,6 +4,7 @@ use std::fmt;
 pub enum ShapefileError {
     IoError(std::io::Error),
     InvalidShapeType(i32),
+    UnimplementedShapeType(i32),  // New variant for unimplemented geometries
 }
 
 impl fmt::Display for ShapefileError {
@@ -11,6 +12,7 @@ impl fmt::Display for ShapefileError {
         match self {
             ShapefileError::IoError(err) => write!(f, "IO error: {}", err),
             ShapefileError::InvalidShapeType(shape_type) => write!(f, "Invalid shape type: {}", shape_type),
+            ShapefileError::UnimplementedShapeType(shape_type) => write!(f, "Unimplemented shape type: {}", shape_type),  // Formatting for new error
         }
     }
 }
@@ -20,5 +22,3 @@ impl From<std::io::Error> for ShapefileError {
         ShapefileError::IoError(err)
     }
 }
-
-

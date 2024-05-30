@@ -1,5 +1,6 @@
 use byteorder::{BigEndian, LittleEndian, ReadBytesExt};
 use std::io::{Read, Seek, SeekFrom};
+use crate::error::ShapefileError;
 
 #[derive(Debug)]
 pub struct Header {
@@ -37,7 +38,7 @@ impl Default for Header {
 }
 
 impl Header {
-    pub fn read<R: Read + Seek>(&mut self, reader: &mut R) -> Result<(), std::io::Error> {
+    pub fn read<R: Read + Seek>(&mut self, reader: &mut R) -> Result<(), ShapefileError> {
         self.file_code = reader.read_i32::<BigEndian>()?;
         reader.seek(SeekFrom::Current(20))?;
         self.file_length = reader.read_i32::<BigEndian>()?;

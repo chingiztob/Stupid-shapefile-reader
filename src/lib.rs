@@ -1,17 +1,17 @@
+mod error;
 mod header;
 mod record;
 mod shape;
-mod error;
 mod shapes;
 
+pub use error::ShapefileError;
 pub use header::Header;
 pub use record::Record;
-pub use error::ShapefileError;
 
+use geo::Geometry;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
-use geo::Geometry;
 
 /// Represents the main file containing a buffer, header, and records.
 pub struct MainFile {
@@ -30,6 +30,7 @@ impl MainFile {
         };
 
         mainfile.read_header()?;
+        mainfile.check_geometry_type()?;
         mainfile.read_records()?;
 
         Ok(mainfile)
@@ -67,6 +68,13 @@ impl MainFile {
             }
         }
         Ok(())
+    }
+
+    fn check_geometry_type(&self) -> Result<(), ShapefileError> {
+        match self.header.shape_type {
+            0 | 1 => Ok(()),
+            _ => Err(ShapefileError::UnimplementedShapeType(self.header.shape_type)),
+        }
     }
 
     pub fn to_csv(&self) -> String {

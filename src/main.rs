@@ -3,7 +3,7 @@ use shape::*;
 fn main() {
     // r"D:\GIS\DIPLOM\Outputs\Chelyabinsk\Shapes\chel_H3_TT.shp"
     let start = std::time::Instant::now();
-    //let mainfile = MainFile::from(r"D:\Rust\shape\files\demo_1.shp").unwrap();
+    //let mainfile = MainFile::from(r"D:\Rust\shape\files\chel_H3_TT.shp").unwrap();
     let mainfile = MainFile::from(r"D:\Rust\shape\files\demo_big.shp").unwrap();
 
     println!("file header {:#?}", mainfile.header);
