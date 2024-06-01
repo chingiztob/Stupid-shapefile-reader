@@ -1,6 +1,6 @@
+use crate::error::ShapefileError;
 use byteorder::{BigEndian, LittleEndian, ReadBytesExt};
 use std::io::{Read, Seek, SeekFrom};
-use crate::error::ShapefileError;
 
 #[derive(Debug)]
 pub struct Header {

@@ -1,16 +1,27 @@
 use shape::*;
+use std::io;
+use std::process;
 
 fn main() {
-    // r"D:\GIS\DIPLOM\Outputs\Chelyabinsk\Shapes\chel_H3_TT.shp"
     let start = std::time::Instant::now();
-    //let mainfile = MainFile::from(r"D:\Rust\shape\files\chel_H3_TT.shp").unwrap();
-    let mainfile = MainFile::from(r"D:\Rust\shape\files\demo_big.shp").unwrap();
+
+    let mut path = String::new();
+    println!("Enter the path to the shape file:");
+    io::stdin()
+        .read_line(&mut path)
+        .expect("Failed to read input");
+
+    let path = path.trim();
+
+    let mainfile = MainFile::from(path).unwrap_or_else(|err| {
+        eprintln!("Problem parsing arguments: {err}");
+        process::exit(1);
+    });
 
     println!("file header {:#?}", mainfile.header);
     println!("Geometry type {:#?}", mainfile.geom_type());
     println!("file records {:#?}", mainfile.records.len());
     println!("file records {:#?}", mainfile.records[0]);
-
 
     let csv = mainfile.to_csv();
     // write to csv

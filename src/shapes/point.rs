@@ -1,10 +1,10 @@
 //! Shapefile point shape reader
 
+use crate::error::ShapefileError;
+use crate::shape::ShapeReader;
 use byteorder::{LittleEndian, ReadBytesExt};
 use geo::{Geometry, Point};
 use std::io::Read;
-use crate::error::ShapefileError;
-use crate::shape::ShapeReader;
 
 pub struct PointReader;
 

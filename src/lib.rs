@@ -15,9 +15,9 @@ use std::path::PathBuf;
 
 /// Represents the main file containing a buffer, header, and records.
 pub struct MainFile {
-    buffer: BufReader<File>,
-    pub header: Header,
-    pub records: Vec<Geometry>,
+    buffer: BufReader<File>,    // IO buffer for reading the file
+    pub header: Header,         // 100-byte header of .shp file
+    pub records: Vec<Geometry>, // Vector of geometries in the file
 }
 
 impl MainFile {
@@ -70,10 +70,15 @@ impl MainFile {
         Ok(())
     }
 
+    /// Check if the geometry type is supported
+    /// Currently only supports Point and Null shapes
+    /// Returns an error if the geometry type is not supported
     fn check_geometry_type(&self) -> Result<(), ShapefileError> {
         match self.header.shape_type {
             0 | 1 => Ok(()),
-            _ => Err(ShapefileError::UnimplementedShapeType(self.header.shape_type)),
+            _ => Err(ShapefileError::UnimplementedShapeType(
+                self.header.shape_type,
+            )),
         }
     }
 
