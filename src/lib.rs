@@ -13,7 +13,12 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
 
-/// Represents the main file containing a buffer, header, and records.
+/// MainFile is the main struct for reading shapefiles
+/// It contains a buffer for reading the file, a header, and a vector of records
+/// The records vector contains the geometries crate `geo` in the file
+/// The header contains information about the file
+/// The buffer is used to read the file internally and is not exposed to the user
+/// `MainFile` provides public api to read the file and get information about the file
 pub struct MainFile {
     buffer: BufReader<File>,    // IO buffer for reading the file
     pub header: Header,         // 100-byte header of .shp file
@@ -36,6 +41,7 @@ impl MainFile {
         Ok(mainfile)
     }
 
+    // Get the geometry type of the file
     pub fn geom_type(&self) -> &str {
         match self.header.shape_type {
             0 => "Null",
@@ -56,15 +62,34 @@ impl MainFile {
         }
     }
 
+    // Read the 100-byte header of the file
     fn read_header(&mut self) -> Result<(), ShapefileError> {
         self.header.read(&mut self.buffer)?;
         Ok(())
     }
 
+    /// Read all records in the file
+    /// Function iterates over the file buffer and reads all records
+    /// into the records vector
+    /// Returns an error if the record cannot be read
+    /// When EOF is reached, the function returns Ok(())
     fn read_records(&mut self) -> Result<(), ShapefileError> {
-        while let Ok(record) = record::read_record(&mut self.buffer) {
-            if let Some(geometry) = record.geometry {
-                self.records.push(geometry);
+        loop {
+            match record::read_record(&mut self.buffer) {
+                Ok(record) => {
+                    if let Some(geometry) = record.geometry {
+                        self.records.push(geometry);
+                    }
+                }
+                Err(e) => {
+                    if let ShapefileError::IoError(ref io_err) = e {
+                        // Check if the error is due to reaching EOF
+                        if io_err.kind() == std::io::ErrorKind::UnexpectedEof {
+                            break;
+                        }
+                    }
+                    return Err(e);
+                }
             }
         }
         Ok(())
@@ -75,7 +100,7 @@ impl MainFile {
     /// Returns an error if the geometry type is not supported
     fn check_geometry_type(&self) -> Result<(), ShapefileError> {
         match self.header.shape_type {
-            0 | 1 => Ok(()),
+            0 | 1 | 3 => Ok(()),
             _ => Err(ShapefileError::UnimplementedShapeType(
                 self.header.shape_type,
             )),
