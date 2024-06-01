@@ -5,3 +5,6 @@
 *.prj
 *.shx
 *.csv
+*.sbn
+*.sbx
+*.xml

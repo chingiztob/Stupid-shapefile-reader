@@ -1,3 +1,9 @@
+//! # Shape
+//! `shape` is a stupid crate for reading shapefiles
+//! it was made solely for educational purposes
+//! currently it can read Point and Line shapefiles
+//! into vector of geometries from the `geo` crate
+
 mod error;
 mod header;
 mod record;

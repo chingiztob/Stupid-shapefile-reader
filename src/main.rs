@@ -5,18 +5,13 @@ use std::process;
 fn main() {
     let start = std::time::Instant::now();
 
-    /* 
     let mut path = String::new();
     println!("Enter the path to the shape file:");
     io::stdin()
         .read_line(&mut path)
         .expect("Failed to read input");
 
-    let path = path.trim(); 
-    */
-
-    let path = r"D:\Rust\shape\files\demo_line.shp";
-    //let path = r"D:\Rust\shape\files\demo_big.shp";
+    let path = path.trim();
 
     let mainfile = MainFile::from(path).unwrap_or_else(|err| {
         eprintln!("Problem parsing arguments: {err}");
@@ -26,7 +21,7 @@ fn main() {
     println!("file header {:#?}", mainfile.header);
     println!("Geometry type {:#?}", mainfile.geom_type());
     println!("file records {:#?}", mainfile.records.len());
-    println!("file records {:#?}", mainfile.records[0]);
+    println!("file first record {:#?}", mainfile.records[0]);
 
     /*
     let csv = mainfile.to_csv();
