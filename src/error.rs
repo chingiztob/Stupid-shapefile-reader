@@ -5,6 +5,7 @@ pub enum ShapefileError {
     IoError(std::io::Error),
     InvalidShapeType(i32),
     UnimplementedShapeType(i32),
+    DbaseError(dbase::Error),
 }
 
 impl fmt::Display for ShapefileError {
@@ -17,6 +18,7 @@ impl fmt::Display for ShapefileError {
             ShapefileError::UnimplementedShapeType(shape_type) => {
                 write!(f, "Unimplemented shape type: {}", shape_type)
             }
+            ShapefileError::DbaseError(err) => write!(f, "DBase error: {}", err),
         }
     }
 }
@@ -24,5 +26,11 @@ impl fmt::Display for ShapefileError {
 impl From<std::io::Error> for ShapefileError {
     fn from(err: std::io::Error) -> ShapefileError {
         ShapefileError::IoError(err)
+    }
+}
+
+impl From<dbase::Error> for ShapefileError {
+    fn from(err: dbase::Error) -> ShapefileError {
+        ShapefileError::DbaseError(err)
     }
 }

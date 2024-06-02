@@ -3,6 +3,11 @@ use byteorder::{BigEndian, ReadBytesExt};
 use geo::Geometry;
 use std::io::{Read, Seek};
 
+
+/// Internal representation of a record in a shapefile.
+/// A record contains a number, content length, and a geometry
+/// This struct does not contain the attributes of the record
+/// which are handled by the `dbase` crate
 #[derive(Debug, Default)]
 pub struct Record {
     pub number: i32,

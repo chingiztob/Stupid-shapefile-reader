@@ -33,6 +33,7 @@ pub use error::ShapefileError;
 pub use header::Header;
 pub use record::Record;
 
+use dbase::Record as DBaseRecord;
 use geo::Geometry;
 use std::fs::File;
 use std::io::BufReader;
@@ -45,9 +46,9 @@ use std::path::PathBuf;
 /// The buffer is used to read the file internally and is not exposed to the user
 /// `MainFile` provides public api to read the file and get information about the file
 pub struct MainFile {
-    buffer: BufReader<File>,    // IO buffer for reading the file
-    pub header: Header,         // 100-byte header of .shp file
-    pub records: Vec<Geometry>, // Vector of geometries in the file
+    buffer: BufReader<File>,                   // IO buffer for reading the file
+    pub header: Header,                        // 100-byte header of .shp file
+    pub records: Vec<(Geometry, DBaseRecord)>, // Vector of geometries and attributes in the file
 }
 
 impl MainFile {
@@ -61,7 +62,9 @@ impl MainFile {
 
         mainfile.read_header()?;
         mainfile.check_geometry_type()?;
-        mainfile.read_records()?;
+
+        let dbf_path = path.replace(".shp", ".dbf");
+        mainfile.read_records(dbf_path.as_str())?;
 
         Ok(mainfile)
     }
@@ -97,13 +100,17 @@ impl MainFile {
     /// Function iterates over the file buffer and reads all records
     /// into the records vector
     /// Returns an error if the record cannot be read
-    /// When EOF is reached, the function returns Ok(())
-    fn read_records(&mut self) -> Result<(), ShapefileError> {
-        loop {
+    /// When EOF is reached, the function returns `Ok(())`
+    /// The function also reads the dbf file and associates the records with the geometries
+    /// The dbf file should have the same name as the shapefile with the extension `.dbf`
+    fn read_records(&mut self, dbf_path: &str) -> Result<(), ShapefileError> {
+        let records = dbase::read(dbf_path)?;
+
+        for dbf_record in records.into_iter() {
             match record::read_record(&mut self.buffer) {
                 Ok(record) => {
                     if let Some(geometry) = record.geometry {
-                        self.records.push(geometry);
+                        self.records.push((geometry, dbf_record));
                     }
                 }
                 Err(e) => {
@@ -132,14 +139,19 @@ impl MainFile {
         }
     }
 
+    /// Convert the records to a CSV-like string
+    /// Fields are separated by commas and records by newlines
+    /// Currently only supports Point geometries and
+    /// does not support attributes
     pub fn to_csv(&self) -> String {
         let mut csv = String::new();
 
-        for geometry in &self.records {
+        for (geometry, _) in &self.records {
             match geometry {
                 Geometry::Point(point) => {
-                    csv.push_str(&format!("{},{}\n", point.x(), point.y()));
+                    csv.push_str(&format!("{},{}", point.x(), point.y()));
                 }
+                Geometry::Line(_) => todo!(),
                 Geometry::LineString(_) => todo!(),
                 Geometry::Polygon(_) => todo!(),
                 Geometry::MultiPoint(_) => todo!(),
