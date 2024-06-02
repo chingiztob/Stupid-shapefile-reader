@@ -3,6 +3,25 @@
 //! it was made solely for educational purposes
 //! currently it can read Point and Line shapefiles
 //! into vector of geometries from the `geo` crate
+//! ## Example
+//!
+//! ```rust,no_run
+//! use shapefile_reader::MainFile;
+//!
+//! fn main() -> Result<(), shapefile_reader::ShapefileError> {
+//!     // Path to the .shp file
+//!     let path = "path/to/your/shapefile.shp";
+//!     // Create a MainFile instance from the shapefile path
+//!     let main_file = MainFile::from(path)?;
+//!     // Print the type of geometries contained in the shapefile
+//!     println!("Geometry type: {}", main_file.geom_type());
+//!     // See records in the shapefile
+//!     println!("Number of records: {}", main_file.records.len());
+//!     println!("First record: {:?}", main_file.records[0]);
+//!
+//!     Ok(())
+//! }
+//! ```
 
 mod error;
 mod header;
@@ -121,7 +140,6 @@ impl MainFile {
                 Geometry::Point(point) => {
                     csv.push_str(&format!("{},{}\n", point.x(), point.y()));
                 }
-                Geometry::Line(_) => todo!(),
                 Geometry::LineString(_) => todo!(),
                 Geometry::Polygon(_) => todo!(),
                 Geometry::MultiPoint(_) => todo!(),

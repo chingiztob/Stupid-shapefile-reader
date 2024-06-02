@@ -11,6 +11,7 @@ pub struct Record {
 }
 
 pub fn read_record<R: Read + Seek>(reader: &mut R) -> Result<Record, ShapefileError> {
+    // Record number
     let number = reader.read_i32::<BigEndian>()?;
     let content_length = reader.read_i32::<BigEndian>()?;
     let geometry = read_shape(reader)?;
