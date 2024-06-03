@@ -3,7 +3,6 @@ use byteorder::{BigEndian, ReadBytesExt};
 use geo::Geometry;
 use std::io::{Read, Seek};
 
-
 /// Internal representation of a record in a shapefile.
 /// A record contains a number, content length, and a geometry
 /// This struct does not contain the attributes of the record
