@@ -27,7 +27,10 @@ mod error;
 mod header;
 mod record;
 mod shape;
-mod shapes;
+mod shapes {
+    pub mod point;
+    pub mod polyline;
+}
 
 pub use error::ShapefileError;
 pub use header::Header;

@@ -26,7 +26,7 @@ impl ShapeReader for PolylineReader {
         let mut points: Vec<Point> = Vec::with_capacity(num_points as usize);
 
         for _ in 0..num_points {
-            let geometry = PointReader::read_shape(reader)?;
+            let geometry: Geometry = PointReader::read_shape(reader)?;
             let point: Point = geometry.try_into().unwrap();
             points.push(point);
         }
