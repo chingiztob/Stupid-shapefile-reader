@@ -36,6 +36,7 @@ pub use error::ShapefileError;
 pub use header::Header;
 pub use record::Record;
 
+use csv::Writer;
 use dbase::Record as DBaseRecord;
 use geo::Geometry;
 use std::fs::File;
@@ -145,12 +146,13 @@ impl MainFile {
 
     /// Convert the records to a CSV-like string
     /// Fields are separated by commas and records by newlines
-    pub fn to_csv(&self) -> String {
-        let mut csv = String::new();
-
+    pub fn to_csv(&self, path: &str) -> Result<(), csv::Error> {
+        let mut wtr = Writer::from_writer(File::create(path)?);
+        wtr.write_record(["geometry", "data"])?;
         for (geometry, data) in &self.records {
-            csv.push_str(&format!("{}, {:?}\n", geometry.wkt_string(), data));
+            let string_data = format!("{:?}", data);
+            wtr.write_record(&[geometry.wkt_string(), string_data])?;
         }
-        csv
+        Ok(())
     }
 }

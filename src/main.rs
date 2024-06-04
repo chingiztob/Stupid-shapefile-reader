@@ -31,9 +31,8 @@ fn main() {
         println!("No records found.");
     }
 
-    let csv = mainfile.to_csv();
-    //write to csv
-    std::fs::write("output.csv", csv).expect("Unable to write file");
+    // Write to csv
+    mainfile.to_csv("output.csv").unwrap();
 
     println!("Time elapsed: {:?}", start.elapsed());
 }
