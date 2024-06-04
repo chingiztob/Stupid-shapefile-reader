@@ -152,20 +152,30 @@ impl MainFile {
 
         // Write the header
         let mut header = vec!["geometry".to_string()];
+        // Track the field names because
+        // the order of fields in the dbf file
+        // is not guaranteed (WTAF?)
+        let mut field_names: Vec<String> = Vec::new();
+
         // Get the first record and write the field names
         if let Some((_, first_record)) = self.records.first() {
+            // Clone is required because of some
+            // weird borrowing issues
             for (field_name, _data) in first_record.clone() {
-                header.push(field_name);
+                header.push(field_name.clone());
+                field_names.push(field_name.clone());
             }
         }
         wtr.write_record(&header)?;
 
         for (geometry, record) in &self.records {
             let mut csv_record = vec![geometry.wkt_string()];
-            // Clone is required because of some
-            // weird borrowing issues
-            for (_, field) in record.clone() {
-                csv_record.push(format_field_value(&field));
+            // Access the fields in the correct order by using the field names
+            for field_name in &field_names {
+                let value = record
+                    .get(field_name)
+                    .unwrap_or(&FieldValue::Character(None));
+                csv_record.push(format_field_value(value));
             }
             wtr.write_record(&csv_record)?;
         }
