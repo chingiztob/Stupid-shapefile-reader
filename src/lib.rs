@@ -41,6 +41,7 @@ use geo::Geometry;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
+use wkt::ToWkt;
 
 /// MainFile is the main struct for reading shapefiles
 /// It contains a buffer for reading the file, a header, and a vector of records
@@ -144,24 +145,11 @@ impl MainFile {
 
     /// Convert the records to a CSV-like string
     /// Fields are separated by commas and records by newlines
-    /// Currently only supports Point geometries and
-    /// does not support attributes
     pub fn to_csv(&self) -> String {
         let mut csv = String::new();
 
-        for (geometry, _) in &self.records {
-            match geometry {
-                Geometry::Point(point) => {
-                    csv.push_str(&format!("{},{}", point.x(), point.y()));
-                }
-                Geometry::Line(_) => todo!(),
-                Geometry::LineString(_) => todo!(),
-                Geometry::Polygon(_) => todo!(),
-                Geometry::MultiPoint(_) => todo!(),
-                Geometry::MultiLineString(_) => todo!(),
-                Geometry::MultiPolygon(_) => todo!(),
-                _ => todo!(),
-            }
+        for (geometry, data) in &self.records {
+            csv.push_str(&format!("{}, {:?}\n", geometry.wkt_string(), data));
         }
         csv
     }

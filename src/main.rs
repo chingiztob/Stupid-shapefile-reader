@@ -24,13 +24,16 @@ fn main() {
     println!("file header {:#?}", mainfile.header);
     println!("Geometry type {:#?}", mainfile.geom_type());
     println!("file records {:#?}", mainfile.records.len());
-    println!("file first record {:#?}", mainfile.records[0]);
 
-    /*
+    if !mainfile.records.is_empty() {
+        println!("Seconds record: {:#?}", mainfile.records[1]);
+    } else {
+        println!("No records found.");
+    }
+
     let csv = mainfile.to_csv();
     //write to csv
     std::fs::write("output.csv", csv).expect("Unable to write file");
-    */
 
     println!("Time elapsed: {:?}", start.elapsed());
 }
