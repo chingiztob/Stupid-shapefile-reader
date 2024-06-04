@@ -37,6 +37,7 @@ pub use header::Header;
 pub use record::Record;
 
 use csv::Writer;
+use dbase::FieldValue;
 use dbase::Record as DBaseRecord;
 use geo::Geometry;
 use std::fs::File;
@@ -144,15 +145,43 @@ impl MainFile {
         }
     }
 
-    /// Convert the records to a CSV-like string
+    /// Write records to a csv file
     /// Fields are separated by commas and records by newlines
     pub fn to_csv(&self, path: &str) -> Result<(), csv::Error> {
         let mut wtr = Writer::from_writer(File::create(path)?);
-        wtr.write_record(["geometry", "data"])?;
-        for (geometry, data) in &self.records {
-            let string_data = format!("{:?}", data);
-            wtr.write_record(&[geometry.wkt_string(), string_data])?;
+
+        // Write the header
+        let mut header = vec!["geometry".to_string()];
+        // Get the first record and write the field names
+        if let Some((_, first_record)) = self.records.first() {
+            for (field_name, _data) in first_record.clone() {
+                header.push(field_name);
+            }
         }
+        wtr.write_record(&header)?;
+
+        for (geometry, record) in &self.records {
+            let mut csv_record = vec![geometry.wkt_string()];
+            // Clone is required because of some
+            // weird borrowing issues
+            for (_, field) in record.clone() {
+                csv_record.push(format_field_value(&field));
+            }
+            wtr.write_record(&csv_record)?;
+        }
+        wtr.flush()?;
         Ok(())
+    }
+}
+
+fn format_field_value(value: &FieldValue) -> String {
+    match value {
+        FieldValue::Character(Some(ref s)) => s.to_string(),
+        FieldValue::Numeric(Some(ref n)) => n.to_string(),
+        FieldValue::Float(Some(ref f)) => f.to_string(),
+        FieldValue::Logical(Some(ref b)) => b.to_string(),
+        FieldValue::Date(Some(ref d)) => d.to_string(),
+        FieldValue::DateTime(ref dt) => format!("{:?}", dt),
+        _ => "".to_string(),
     }
 }

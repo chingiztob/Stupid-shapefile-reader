@@ -32,7 +32,19 @@ fn main() {
     }
 
     // Write to csv
-    mainfile.to_csv("output.csv").unwrap();
+    let mut write_csv = String::new();
+    println!("Write to csv? (y/n)");
+    io::stdin()
+        .read_line(&mut write_csv)
+        .expect("Failed to read input");
+
+    if write_csv.trim().eq_ignore_ascii_case("y") {
+        println!("Writing to csv...");
+        mainfile.to_csv("output.csv").unwrap_or_else(|err| {
+            eprintln!("Problem writing to csv: {err}");
+            process::exit(1);
+        })
+    }
 
     println!("Time elapsed: {:?}", start.elapsed());
 }
