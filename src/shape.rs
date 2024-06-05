@@ -1,5 +1,9 @@
-use crate::shapes::point::{MultipointReader, PointMReader, PointReader};
-use crate::{error::ShapefileError, shapes::polyline::PolylineReader};
+use crate::{
+    error::ShapefileError,
+    shapes::point::{MultipointReader, PointMReader, PointReader},
+    shapes::polygon::PolygonReader,
+    shapes::polyline::PolylineReader,
+};
 use byteorder::{LittleEndian, ReadBytesExt};
 use geo::Geometry;
 use std::io::{Read, Seek};
@@ -14,6 +18,7 @@ pub fn read_shape<R: Read + Seek>(reader: &mut R) -> Result<Option<Geometry>, Sh
         0 => Ok(None), // Null shape
         1 => PointReader::read_shape(reader).map(Some),
         3 => PolylineReader::read_shape(reader).map(Some),
+        5 => PolygonReader::read_shape(reader).map(Some),
         8 => MultipointReader::read_shape(reader).map(Some),
         21 => PointMReader::read_shape(reader).map(Some),
         // Other shapes are not implemented yet

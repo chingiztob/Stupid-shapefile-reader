@@ -30,6 +30,7 @@ mod shape;
 mod shapes {
     pub mod point;
     pub mod polyline;
+    pub mod polygon;
 }
 
 pub use error::ShapefileError;
@@ -45,12 +46,12 @@ use std::io::BufReader;
 use std::path::PathBuf;
 use wkt::ToWkt;
 
-/// `MainFile` is the main struct for reading shapefiles
-/// It contains a buffer for reading the file, a header, and a vector of records
-/// The records vector contains the geometries crate `geo` in the file
-/// The header contains information about the file
-/// The buffer is used to read the file internally and is not exposed to the user
-/// `MainFile` provides public api to read the file and get information about the file
+/// `MainFile` is the main struct for reading shapefiles.
+/// It contains a buffer for reading the file, a header, and a vector of records.
+/// The records vector contains the geometries crate [`geo`] in the file.
+/// The header contains information about the file.
+/// The buffer is used to read the file internally and is not exposed to the user.
+/// `MainFile` provides public api to read the file and get information about the file.
 pub struct MainFile {
     buffer: BufReader<File>,                   // IO buffer for reading the file
     pub header: Header,                        // 100-byte header of .shp file
@@ -138,7 +139,7 @@ impl MainFile {
     /// Returns an error if the geometry type is not supported
     fn check_geometry_type(&self) -> Result<(), ShapefileError> {
         match self.header.shape_type {
-            0 | 1 | 3 | 8 | 21 => Ok(()),
+            0 | 1 | 3 | 5 | 8 | 21 => Ok(()),
             _ => Err(ShapefileError::UnimplementedShapeType(
                 self.header.shape_type,
             )),
