@@ -138,7 +138,7 @@ impl MainFile {
     /// Returns an error if the geometry type is not supported
     fn check_geometry_type(&self) -> Result<(), ShapefileError> {
         match self.header.shape_type {
-            0 | 1 | 3 => Ok(()),
+            0 | 1 | 3 | 8 | 21 => Ok(()),
             _ => Err(ShapefileError::UnimplementedShapeType(
                 self.header.shape_type,
             )),
