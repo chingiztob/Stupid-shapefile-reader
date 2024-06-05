@@ -11,14 +11,14 @@ pub enum ShapefileError {
 impl fmt::Display for ShapefileError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ShapefileError::IoError(err) => write!(f, "IO error: {}", err),
+            ShapefileError::IoError(err) => write!(f, "IO error: {err}"),
             ShapefileError::InvalidShapeType(shape_type) => {
-                write!(f, "Invalid shape type: {}", shape_type)
+                write!(f, "Invalid shape type: {shape_type}")
             }
             ShapefileError::UnimplementedShapeType(shape_type) => {
-                write!(f, "Unimplemented shape type: {}", shape_type)
+                write!(f, "Unimplemented shape type: {shape_type}")
             }
-            ShapefileError::DbaseError(err) => write!(f, "DBase error: {}", err),
+            ShapefileError::DbaseError(err) => write!(f, "DBase error: {err}"),
         }
     }
 }

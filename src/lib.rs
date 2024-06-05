@@ -45,7 +45,7 @@ use std::io::BufReader;
 use std::path::PathBuf;
 use wkt::ToWkt;
 
-/// MainFile is the main struct for reading shapefiles
+/// `MainFile` is the main struct for reading shapefiles
 /// It contains a buffer for reading the file, a header, and a vector of records
 /// The records vector contains the geometries crate `geo` in the file
 /// The header contains information about the file
@@ -112,7 +112,7 @@ impl MainFile {
     fn read_records(&mut self, dbf_path: &str) -> Result<(), ShapefileError> {
         let records = dbase::read(dbf_path)?;
 
-        for dbf_record in records.into_iter() {
+        for dbf_record in records {
             match record::read_record(&mut self.buffer) {
                 Ok(record) => {
                     if let Some(geometry) = record.geometry {
@@ -191,7 +191,7 @@ fn format_field_value(value: &FieldValue) -> String {
         FieldValue::Float(Some(ref f)) => f.to_string(),
         FieldValue::Logical(Some(ref b)) => b.to_string(),
         FieldValue::Date(Some(ref d)) => d.to_string(),
-        FieldValue::DateTime(ref dt) => format!("{:?}", dt),
-        _ => "".to_string(),
+        FieldValue::DateTime(ref dt) => format!("{dt:?}"),
+        _ => String::new(),
     }
 }

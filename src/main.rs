@@ -1,4 +1,4 @@
-use shape::*;
+use shape::MainFile;
 use std::io;
 use std::process;
 
@@ -18,10 +18,10 @@ fn main() {
     println!("Geometry type {:#?}", mainfile.geom_type());
     println!("file records {:#?}", mainfile.records.len());
 
-    if !mainfile.records.is_empty() {
-        println!("First record: {:#?}", mainfile.records[0]);
-    } else {
+    if mainfile.records.is_empty() {
         println!("No records found.");
+    } else {
+        println!("First record: {:#?}", mainfile.records[0]);
     }
 
     // Write to csv
@@ -36,7 +36,7 @@ fn main() {
         mainfile.to_csv("output.csv").unwrap_or_else(|err| {
             eprintln!("Problem writing to csv: {err}");
             process::exit(1);
-        })
+        });
     }
 
     println!("Done!");

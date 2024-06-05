@@ -1,6 +1,6 @@
-//! This module reads and parses the Polyline shape type.
+//! This module reads and parses the `Polyline` shape type.
 //! Shapefile polylines can contain unconnected line segments
-//! so the reader will return a MultiLineString geometry.
+//! so the reader will return a `MultiLineString` geometry.
 
 use crate::error::ShapefileError;
 use crate::shape::ShapeReader;
