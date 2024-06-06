@@ -28,6 +28,9 @@ impl ShapeReader for PolygonReader {
         }
 
         // Create LineStrings for each part
+        // Polygon is defined by a single exterior ring and zero or more interior rings
+        // Rings are represented as LineStrings with similar start and end points
+        // The first LineString is the exterior ring and the rest are interior rings
         let mut segments = Vec::with_capacity(num_parts);
         for i in 0..num_parts {
             let start = parts[i];
@@ -42,7 +45,7 @@ impl ShapeReader for PolygonReader {
 
         Ok(Geometry::Polygon(Polygon::new(
             segments.first().unwrap().clone(),
-            vec![],
+            segments[1..].to_vec(),
         )))
     }
 }

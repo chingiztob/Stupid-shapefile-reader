@@ -18,12 +18,6 @@ fn main() {
     println!("Geometry type {:#?}", mainfile.geom_type());
     println!("file records {:#?}", mainfile.records.len());
 
-    if mainfile.records.is_empty() {
-        println!("No records found.");
-    } else {
-        println!("First record: {:#?}", mainfile.records[0]);
-    }
-
     // Write to csv
     let mut write_csv = String::new();
     println!("Write to csv? (y/n)");
