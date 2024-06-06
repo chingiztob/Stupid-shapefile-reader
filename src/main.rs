@@ -9,10 +9,15 @@ fn main() {
         .read_line(&mut path)
         .expect("Failed to read input");
 
-    let mainfile = MainFile::from(path.trim()).unwrap_or_else(|err| {
+    // Remove double quotes before and after the file path
+    let path = path.replace('"', "").trim().to_string();
+
+    let bench_start = std::time::Instant::now();
+    let mainfile = MainFile::from(&path).unwrap_or_else(|err| {
         eprintln!("Problem parsing arguments: {err}");
         process::exit(1);
     });
+    println!("File read in : {:?}", bench_start.elapsed());
 
     println!("file header {:#?}", mainfile.header);
     println!("Geometry type {:#?}", mainfile.geom_type());
